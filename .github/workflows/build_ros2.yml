@@ -1,0 +1,52 @@
+name: Build ROS2
+
+on:
+  workflow_dispatch:
+    inputs:
+      ros_distribution:
+        description: 'ROS2 distribution to build'
+        required: true
+        default: 'jazzy'
+        type: choice
+        options:
+          - jazzy
+          - iron
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: osrf/ros:${{ inputs.ros_distribution }}-desktop
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ inputs.ros_distribution }}
+
+      - name: Build ROS2
+        id: build
+        uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          target-ros2-distro: ${{ inputs.ros_distribution }}
+          skip-tests: true
+          vcs-repo-file-url: |
+            repos/cyclonedds.repos
+            repos/ds.repos
+            repos/generate_parameter_library.repos
+            repos/micro_ros_agent.repos
+            repos/nmea.repos
+            repos/urg.repos
+            repos/velodyne.repos
+            repos/webcam.repos
+
+      - name: Upload ROS2 build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros2-${{ inputs.ros_distribution }}-build
+          path: ${{ steps.build.outputs.ros-workspace-directory-name }}/install
+          retention-days: 90

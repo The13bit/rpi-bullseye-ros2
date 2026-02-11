@@ -1,0 +1,72 @@
+name: build_ros2
+
+on:
+  workflow_dispatch:
+    inputs:
+      distro:
+        description: 'ROS2 distribution'
+        required: true
+        default: 'jazzy'
+        type: choice
+        options:
+          - jazzy
+          - iron
+          - humble
+      debian_distro:
+        description: 'Debian distribution'
+        required: true
+        default: 'bookworm'
+        type: choice
+        options:
+          - bookworm
+          - bullseye
+      build_full_pkg:
+        description: 'Build full package (includes extra packages)'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build Docker image
+        run: |
+          cd build
+          docker build \
+            --build-arg "DEBIAN_DISTRO=${{ inputs.debian_distro }}" \
+            -t ros2-${{ inputs.distro }}-aarch64 .
+
+      - name: Build ROS2
+        run: |
+          cd build
+          mkdir -p ros2_ws/src
+          rm -f ros2_ws/*.repos
+          docker run --rm --net=host \
+            -v ${{ github.workspace }}/build/ros2_ws:/ros2_ws \
+            ros2-${{ inputs.distro }}-aarch64 \
+            /bin/bash -c "bash /ros2_ws/build.bash ${{ inputs.distro }} ${{ inputs.build_full_pkg }}"
+
+      - name: Create deb package
+        run: |
+          cd build
+          bash create_deb.bash ${{ inputs.distro }} arm64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros2-${{ inputs.distro }}-${{ inputs.debian_distro }}-arm64-deb
+          path: build/deb/*.deb
+          if-no-files-found: error
+          retention-days: 90

@@ -1,5 +1,5 @@
 ARG DEBIAN_DISTRO=bookworm
-FROM arm64v8/debian:${DEBIAN_DISTRO}
+FROM --platform=linux/arm64/v8  arm64v8/debian:${DEBIAN_DISTRO}
 
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

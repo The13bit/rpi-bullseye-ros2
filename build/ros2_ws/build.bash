@@ -57,7 +57,6 @@ export CPLUS_INCLUDE_PATH=${PCL_INCLUDE_PATH}:${EIGEN_INCLUDE_PATH}:$CPLUS_INCLU
 
 colcon build \
     --install-base $(pwd)/${DISTRO}/ \
-    --executor sequential \
     --packages-ignore autoware_trajectory autoware_ekf_localizer autoware_map_projection_loader autoware_test_utils autoware_planning_test_manager autoware_gnss_poser autoware_route_handler autoware_map_loader autoware_simple_pure_pursuit autoware_velocity_smoother autoware_mission_planner autoware_path_generator autoware_behavior_velocity_planner_common autoware_behavior_velocity_planner autoware_motion_velocity_planner_common autoware_motion_velocity_planner autoware_motion_velocity_obstacle_stop_module autoware_behavior_velocity_stop_line_module \
     --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=armv8-a+crc -mtune=cortex-a72 -O3" -DCMAKE_C_FLAGS="-march=armv8-a+crc -mtune=cortex-a72 -O3"
 

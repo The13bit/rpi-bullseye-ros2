@@ -32,7 +32,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
 
@@ -69,4 +68,4 @@ jobs:
           name: ros2-${{ inputs.distro }}-${{ inputs.debian_distro }}-arm64-deb
           path: build/deb/*.deb
           if-no-files-found: error
-          retention-days: 90
+      
